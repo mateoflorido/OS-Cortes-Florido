@@ -3,15 +3,15 @@ Archivo: csortp.c
 Realizado por: Mateo Florido y Daniela Cortes
 Contiene: Implementación de las funciones que permiten leer logs de
 procesos, cargar a la estructura Process y ordenarlos mediante
-Merge Sort con un comparador implementado.
+Merge Sort.
 Fecha de última modificación: 11/09/2019
 */
 
 #include "csortp.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -19,7 +19,7 @@ Fecha de última modificación: 11/09/2019
 #define MAXPROCESS 200000
 #define ONEPROCESS 20000
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[ ])
 {
 
     if (argc < 3)
@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    char json[6];
+    char temp_number[6];
+    char tmp_filename[10];
     char *line = NULL;
     struct Process *processes;
     int i, n = 1 , num_process = 0, status;
@@ -66,27 +67,83 @@ int main(int argc, char *argv[])
         r = 1;
         n++;
     }
-    if (argc == 3 || ( argc == 4 && (strcmp(argv[n], "-r") == 0)))
+    if ( argc == 3 || ( argc == 4 && ( strcmp( argv[ n ], "-r" ) == 0 ) ) )
     {
-        processes = malloc(sizeof(*processes) * ONEPROCESS);
-        if ((arg_file = fopen(argv[n], "r")) == NULL)
-        {
-            perror("Error: Reading file.\n");
-            return (1);
-        }
-        while ((read = getline(&line, &len, arg_file)) != -1)
-        {
-            FillProcess(line, &processes[num_process]);
-            num_process++;
-        }
-
-        fclose(arg_file);
+        processes = malloc( sizeof( *processes ) * ONEPROCESS );
+        num_process = ReadLog( processes, argv[ n ], num_process );
         n++;
         MergeSort(processes, num_process, r);
-        if ((tmpf = fopen(argv[n], "w")) == NULL)
+        WriteLog(processes, argv[n], num_process);
+
+        return ( 0 );
+    }
+
+    for (; n < argc - 1; n++)
+    {
+        if ((pid = fork()) == -1)
+        {
+            perror("Error fork");
+            exit(1);
+        }
+        if (pid == 0) 
+        {
+            break;
+        }
+    }
+
+    if (pid == 0)
+    {
+        processes = malloc( sizeof(*processes) * ONEPROCESS);
+        num_process = ReadLog( processes, argv[ n ] , num_process);
+
+        MergeSort(processes, num_process, r);
+        strcpy( tmp_filename, "tmp" );
+        snprintf(temp_number, 10, "%d", n);
+        strcat( tmp_filename, temp_number );
+        WriteLog( processes, tmp_filename, num_process );
+
+        exit(1);
+    }
+
+    while ((pid = wait(&status)) != -1);
+
+    num_process = 0;
+    processes = malloc(sizeof(*processes) * MAXPROCESS);
+    for (i = r + 1; i < n; i++)
+    {
+        strcpy( tmp_filename, "tmp" );
+        snprintf(temp_number, 10, "%d", i);
+        strcat( tmp_filename, temp_number );
+        num_process = ReadLog( processes, tmp_filename, num_process );
+        remove( tmp_filename );
+    }
+
+    MergeSort(processes, num_process, r);
+    WriteLog(processes,argv[ n ], num_process );
+
+    return(0);
+
+   
+}
+/*
+Función: WriteLog
+Parámetros de Entrada: 
+    *processes: apuntador a todos los procesos a  escribir.
+    filename: nombre del archivo.
+    num_process: numero de procesos en el array de processes.
+Valor de Salida: Ninguno
+Descripción: Escribe todos los procesos contenidos en el array
+processes en un archivo.
+*/
+void static WriteLog(struct Process *processes, char *filename, int num_process)
+{
+    int i;
+    FILE *arg_file, *tmpf, *arrf;
+    
+    if ((tmpf = fopen(filename, "w")) == NULL)
         {
             perror("Error: Writing file.\n");
-            return (1);
+            exit(1);
         }
 
         for (i = 0; i < num_process; i++)
@@ -99,108 +156,46 @@ int main(int argc, char *argv[])
             fprintf(tmpf, " %02d:%02d:%02d\n", processes[i].hour, processes[i].minute, processes[i].second);
         }
         fclose(tmpf);
-    
-        return ( 0 );
-
-    
-    }
-
-    for (; n < argc - 1; n++)
+}
+/*
+Función: ReadLog
+Parámetros de Entrada: 
+    *processes: apuntador al array que contendrá los procesos leídos.
+    filename: nombre del archivo a leer.
+    start: índice del array donde va la lectura de los procesos.
+Valor de Salida: total de procesos contenidos en *processes
+Descripción: Lee todos los procesos contenidos en el archivo descrito
+y los carga en memoria. 
+*/
+int static ReadLog(struct Process *processes, char *filename, int start)
+{
+    int num_process = start;
+    FILE *arg_file;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    if ((arg_file = fopen(filename, "r")) == NULL)
     {
-        if ((pid = fork()) == -1)
-        {
-            perror("Error fork process.\n");
-            exit(1);
-        }
-        if (pid == 0)
-        {
-            break;
-        }
-    }
-
-    if (pid == 0)
-    {
-        processes = malloc(sizeof(*processes) * ONEPROCESS);
-        if ((arg_file = fopen(argv[n], "r")) == NULL)
-        {
-            perror("Error: Reading file.\n");
-            return (1);
-        }
-        while ((read = getline(&line, &len, arg_file)) != -1)
-        {
-            FillProcess(line, &processes[num_process]);
-            num_process++;
-        }
-
-        fclose(arg_file);
-        MergeSort(processes, num_process, r);
-        snprintf(json, 10, "%d", n);
-        if ((tmpf = fopen(json, "w")) == NULL)
-        {
-            perror("Error: Writing file.\n");
-            return (1);
-        }
-
-        for (i = 0; i < num_process; i++)
-        {
-            fprintf(tmpf, "%-10s", processes[i].user);
-            fprintf(tmpf, "%-9s", processes[i].binary);
-            fprintf(tmpf, "%3s ", processes[i].priority);
-            fprintf(tmpf, "%7d", processes[i].nice);
-            fprintf(tmpf, " %02d/%02d/%d", processes[i].day, processes[i].month, processes[i].year);
-            fprintf(tmpf, " %02d:%02d:%02d\n", processes[i].hour, processes[i].minute, processes[i].second);
-        }
-        fclose(tmpf);
-
+        perror("Error Reading file");
         exit(1);
     }
-
-    while ((pid = wait(&status)) != -1)
-        ;
-    num_process = 0;
-    processes = malloc(sizeof(*processes) * MAXPROCESS);
-    for (i = r + 1; i < n; i++)
+    while ((read = getline(&line, &len, arg_file)) != -1)
     {
-        snprintf(json, 10, "%d", i);
-        if ((arg_file = fopen(json, "r")) == NULL)
-        {
-            perror("Error: Reading file.\n");
-            return (1);
-        }
-
-        while ((read = getline(&line, &len, arg_file)) != -1)
-        {
-
-            FillProcess(line, &processes[num_process]);
-            num_process++;
-        }
-
-        fclose(arg_file);
+        FillProcess(line, &processes[num_process]);
+        num_process++;
     }
-
-    MergeSort(processes, num_process, r);
-    if ((tmpf = fopen(argv[n], "w")) == NULL)
-    {
-        perror("Error: Writting file.\n");
-        return (1);
-    }
-    for (i = 0; i < num_process; i++)
-    {
-
-        fprintf(tmpf, "%-10s", processes[i].user);
-        fprintf(tmpf, "%-9s", processes[i].binary);
-        fprintf(tmpf, "%3s ", processes[i].priority);
-        fprintf(tmpf, "%7d", processes[i].nice);
-        fprintf(tmpf, " %02d/%02d/%d", processes[i].day, processes[i].month, processes[i].year);
-        fprintf(tmpf, " %02d:%02d:%02d\n", processes[i].hour, processes[i].minute, processes[i].second);
-    }
-    fclose(tmpf);
-
-    exit(1);
-
-   
+    fclose(arg_file);
+    return( num_process );
 }
-
+/*
+Función: FillProcess
+Parámetros de Entrada: 
+    line: cadena de caracteres donde se encuentra la información del proceso.
+    *p: estructura donde se guardarán los datos del proceso.
+Valor de Salida: Ninguno
+Descripción: Descompone la linea de texto recibida y guarda en la estructura la
+información encontrada.
+*/
 void static FillProcess(char *line, struct Process *p)
 {
 
@@ -283,6 +278,15 @@ void static FillProcess(char *line, struct Process *p)
         c++;
     }
 }
+/*
+Función: CompareProcessReversed
+Parámetros de Entrada: 
+    *p1: proceso a comparar con p2.
+    *p2: proceso a comparar con p1.
+Valor de Salida: entero sin signo corto.
+Descripción: Compara los dos procesos para devolver su orden en
+el criterio descendente.
+*/
 unsigned short static CompareProcessReversed(const struct Process *p1, const struct Process *p2)
 {
    
@@ -345,7 +349,15 @@ unsigned short static CompareProcessReversed(const struct Process *p1, const str
         }
     }
 }
-
+/*
+Función: CompareProcess
+Parámetros de Entrada: 
+    *p1: proceso a comparar con p2.
+    *p2: proceso a comparar con p1.
+Valor de Salida: entero sin signo corto.
+Descripción: Compara los dos procesos para devolver su orden en
+el criterio ascendente.
+*/
 unsigned short static CompareProcess(const struct Process *p1, const struct Process *p2)
 {
   
@@ -408,6 +420,17 @@ unsigned short static CompareProcess(const struct Process *p1, const struct Proc
         }
     }
 }
+/*
+Función: Merge
+Parámetros de Entrada: 
+    left: sublista izquierda.
+    right: sublista derecha.
+    res: lista mezclada final.
+    n: tamaño de las sublistas.
+Valor de Salida: Ninguna
+Descripción: Ordena cada sublista aplicando el ordenamiento
+por mezcla de forma ascendente y las junta en una sola.
+*/
 void static Merge(const struct Process *left, const struct Process *right, struct Process *res, int n)
 {
     int i = 0, j = 0;
@@ -439,7 +462,17 @@ void static Merge(const struct Process *left, const struct Process *right, struc
   
     return;
 }
-
+/*
+Función: MergeReversed
+Parámetros de Entrada: 
+    left: sublista izquierda.
+    right: sublista derecha.
+    res: lista mezclada final.
+    n: tamaño de las sublistas.
+Valor de Salida: Ninguna
+Descripción: Ordena cada sublista aplicando el ordenamiento
+por mezcla de forma descendente y las junta en una sola.
+*/
 void static MergeReversed(const struct Process *left, const struct Process *right, struct Process *res, int n)
 {
     int i = 0, j = 0;
@@ -469,25 +502,44 @@ void static MergeReversed(const struct Process *left, const struct Process *righ
     }
     return;
 }
-void static _mergeSort(struct Process *values, struct Process *aside, int n, unsigned short r)
+/*
+Función: _mergeSort
+Parámetros de Entrada: 
+    processes: todos los procesos a ordenar.
+    sorting: lista auxiliar para ordenar los procesos.
+    r: flag para indicar si es ascendente o descendente.
+    n: total de procesos en processes.
+Valor de Salida: Ninguna
+Descripción: Función recursiva que divide la lista en dos sublistas.
+*/
+void static _mergeSort(struct Process *processes, struct Process *sorting, int n, unsigned short r)
 {
     if (n < 2)
     {
         return;
     }
-    _mergeSort(values, aside, n / 2, r);
-    _mergeSort(values + n / 2, aside + n / 2, n - (n / 2), r);
+    _mergeSort(processes, sorting, n / 2, r);
+    _mergeSort(processes + n / 2, sorting + n / 2, n - (n / 2), r);
 
     if (r == 0)
-        Merge(values, values + n / 2, aside, n);
+        Merge(processes, processes + n / 2, sorting, n);
     else
-        MergeReversed(values, values + n / 2, aside, n);
-    memcpy(values, aside, n * sizeof(struct Process));
+        MergeReversed(processes, processes + n / 2, sorting, n);
+    memcpy(processes, sorting, n * sizeof(struct Process));
 }
-
+/*
+Función: MergeSort
+Parámetros de Entrada: 
+    processes: todos los procesos a ordenar.
+    r: flag para indicar si es ascendente o descendente.
+    n: total de procesos en processes.
+Valor de Salida: Ninguna
+Descripción: Función landing que crea la memoria necesaria para el
+proceso de ordenamiento y luego realiza el ordenamiento.
+*/
 void static MergeSort(struct Process *processes, int n, unsigned short r)
 {
-    struct Process *aside = malloc(sizeof(struct Process) * n);
-    _mergeSort(processes, aside, n, r);
-    free(aside);
+    struct Process *sorting = malloc(sizeof(struct Process) * n);
+    _mergeSort(processes, sorting, n, r);
+    free(sorting);
 }

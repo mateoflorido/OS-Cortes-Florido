@@ -1,4 +1,12 @@
-#ifndef CSORTP_H_   /* Include guard */
+/* Módulo para el Ordenamiento de Logs por Procesos */
+/*
+Archivo: csortp.h
+Realizado por: Mateo Florido y Daniela Cortes
+Contiene: Estructura de un Proceso para facilitar su lectura y
+prototipos de funciones que manipulan los logs.
+Fecha de última modificación: 11/09/2019
+*/
+#ifndef CSORTP_H_
 #define CSORTP_H_
 
 struct Process
@@ -15,6 +23,8 @@ struct Process
     unsigned short second;
 };
 void static FillProcess(char *line, struct Process *p);
+int static ReadLog(struct Process *processes, char *filename, int start);
+void static WriteLog(struct Process *processes, char *filename, int num_process);
 void static Merge(const struct Process *left, const struct Process *right, struct Process *res, int n);
 void static MergeReversed(const struct Process *left, const struct Process *right, struct Process *res, int n);
 void static MergeSort(struct Process *processes, int n, unsigned short r);
