@@ -1,0 +1,2 @@
+char **relations;
+char *connected;
