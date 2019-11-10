@@ -5,7 +5,7 @@
 #ifndef RESPONSE_H
 #define RESPONSE_H
 typedef struct Response{
-  char responseType;
+  unsigned int responseType;
   char message[1000];
 } Response;
 

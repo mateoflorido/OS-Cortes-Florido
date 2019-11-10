@@ -25,23 +25,44 @@ int main( int argc, char** argv )
 
     /*Check input parameters from console*/
 
+    if ( argc != 5 )
+    {
+        perror( "Usage: gestor -r [RELATIONS] -p [pipeName]\n" );
+        exit( 1 );
+    }
+    if ( strcmp( argv[ 1 ], "-r" ) == 0 )
+    {
+        if ( strcmp( argv[ 3 ], "-p" ) != 0 )
+        {
+            perror( "Usage: gestor -r [RELATIONS] -p [pipeName]\n" );
+            exit( 1 );
+        }
+    }
+    else if ( strcmp( argv[ 3 ], "-r" ) == 0 )
+    {
+        if ( strcmp( argv[ 1 ], "-p" ) != 0 )
+        {
+            perror( "Usage: gestor -r [RELATIONS] -p [pipeName]\n" );
+            exit( 1 );
+        }
+    }
 
     /*Allocate all memory required*/
     relations = malloc( 10 * sizeof( char* ));
-    cache = malloc( 10 * sizeof( Response* ));
+    cache = calloc( 10, sizeof( Response* ));
     connected = malloc( 10 * sizeof( char ));
     for ( i = 0; i < 10; i++ )
     {
         connected[ i ] = '0';
+        cached[ i ] = 0;
         relations[ i ] = malloc( 10 * sizeof( char ));
+        cache[ i ] = malloc( 50 * sizeof( Response ));
     }
-    printf( "Created Relations 2 \n" );
 
     /*Check input from console*/
     argvarc = ( strcmp( argv[ 1 ], "-r" ) == 0 ) ? 2 : 4;
     argvpipe = ( argvarc == 2 ) ? 4 : 2;
 
-    printf( "FILE: %s \n", argv[ argvarc ] );
     fileRelations = fopen( argv[ argvarc ], "r" );
     if ( !fileRelations )
         perror( "FOPEN ERROR " );
@@ -54,14 +75,48 @@ int main( int argc, char** argv )
                 break;
         }
     }
-    for ( i = 0; i < 10; i++ )
+    /*for ( i = 0; i < 10; i++ )
     {
         for ( j = 0; j < 10; j++ )
         {
             printf( "|%c|", relations[ i ][ j ] );
         }
         printf( "\n" );
-    }
+    }*/
+    printf( "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              @@@@@@@@@@@@@@(@@\n" );
+    printf( "@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*                    @@@@@@@    @@@\n" );
+    printf( "@@@@   &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.                                @@@@\n" );
+    printf( "@@@       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                @@@@@@\n" );
+    printf( "@@@         @@@@@@@@@@@@@@@@@@@@@@@@@@@@                               @@&    @\n" );
+    printf( "@@@           @@@@@@@@@@@@@@@@@@@@@@@@@                                     @@@\n" );
+    printf( "@@@              &@@@@@@@@@@@@@@@@@@@@@                                   &@@@@\n" );
+    printf( "@@@/                 @@@@@@@@@@@@@@@@@#                                 @@@@@@@\n" );
+    printf( "@@@@                      @@@@@@@@@@@@@                                @@@@@@@@\n" );
+    printf( "@@@@@                            .@@@@@                                @@@@@@@@\n" );
+    printf( "@@@@@@@                                                                @@@@@@@@\n" );
+    printf( "@@@ @@@@/                                                              @@@@@@@@\n" );
+    printf( "@@@                                                                    @@@@@@@@\n" );
+    printf( "@@@                                                                   @@@@@@@@@\n" );
+    printf( "@@@@                                                                  @@@@@@@@@\n" );
+    printf( "@@@@@                                                                @@@@@@@@@@\n" );
+    printf( "@@@@@@@                                                              @@@@@@@@@@\n" );
+    printf( "@@@@@@@@@                                                           @@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@                                                       @@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@&,@@&/                                                    @@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@.                                                       @@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@/                                                     @@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@                                                  (@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@,                                              @@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@@@@                                         .@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@@@@@@@@@                                  ,@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@@@@@*                                   &@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@                                      @@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "/@@@@/*                                           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@                                            @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@                                   ,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@/                      &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
+    printf( "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" );
 
     /*Unlinking Pipe*/
     unlink( argv[ argvpipe ] );
@@ -71,14 +126,21 @@ int main( int argc, char** argv )
         perror( "MKFIFO ERROR" );
         exit( 1 );
     }
-    printf( "--------  TWITTER SERVER SERVICE  --------\n" );
-    printf( "-------- STARTING SERVER SERVICE --------\n\n" );
+    printf( "\t\t------------------------------------------\n" );
+    printf( "\t\t------------------------------------------\n" );
+    printf( "\t\t--------  TWITTER SERVER SERVICE  --------\n" );
+    printf( "\t\t--------  STARTING SERVER SERVICE --------\n\n" );
+    printf( "\t\t------------------------------------------\n" );
+    printf( "\t\t------------------------------------------\n" );
     /*Creating Pipes*/
     pthread_create( &threadID[ 0 ], NULL, &seekingRequest, argv[ argvpipe ] );
     pthread_join( threadID[ 0 ], NULL);
 
 }
 
+/*
+ *
+ */
 void* seekingRequest( void* arg )
 {
     char* namedPipe = ( char* ) arg;
@@ -90,6 +152,7 @@ void* seekingRequest( void* arg )
     Response* res = NULL;
     while ( 1 )
     {
+        /*Open Pipe and Wait for Info Incoming*/
         do
         {
             fd = open( namedPipe, O_RDONLY );
@@ -97,53 +160,59 @@ void* seekingRequest( void* arg )
                 perror( "PIPE NOT FOUND... EXIT\n" );
             else
             {
-                printf( "Request incoming...\n" );
+                printf( "\n[Solicitud entrante]...\n" );
                 creado = 1;
             }
 
         }
         while ( creado == 0 );
         creado = 0;
+        /*Read from Named Pipe*/
         read( fd, req, sizeof( struct Request ));
-        printf( "Request:\n\t clientID: %c \n\t Request: %c \n\t clientState: %c \n\t Params: %s \n", req->clientID,
+        /*Print Request Received*/
+        printf( "\n[Solicitud]:\n\t [ID Usuario]: %c \n\t [Operación]: %c \n\t [Estado de Cliente]: %c \n\t [Parametros] %s \n",
+                req->clientID,
                 req->operationID,
                 connected[ req->clientID - '0' ], req->params );
+        /*Connect client*/
         if ( req->operationID == '0' )
         {
-            if ( connected[ req->clientID - '0' ] == '0' )
+            self = req->clientID - '0';
+            /*Check Client Already Connected*/
+            if ( connected[ self ] == '0' )
             {
-                connected[ req->clientID - '0' ] = '1';
-                j = sizeof( cache[ req->clientID - '0' ] ) / sizeof( Response );
-                printf( "Size of Cache from client %c : %d\n", req->clientID, j );
-                if ( j > 0 )
+                connected[ self ] = '1';
+                Response* ptrCached = cache[ self ];
+
+                if ( cached[ self ] > 0 )
                 {
                     sleep(( 1 ));
-                    printf( "Size of Cache from client %c : %d\n", req->clientID, j );
-                    for ( i = 0; i < ( sizeof( cache[ req->clientID - '0' ] ) / sizeof( Response )); i++ )
+                    pipeCOM = malloc( 5 * sizeof( char ));
+                    strcpy( pipeCOM, "sc" );
+                    strncat( pipeCOM, &( req->clientID ), 1 );
+                    printf( "[Pipe COM] %s Enviando Tweets en Cache\n", pipeCOM );
+
+                    fd = open( pipeCOM, O_WRONLY | O_NONBLOCK );
+                    if ( fd == -1 )
                     {
-                        pipeCOM = malloc( 5 * sizeof( char ));
-                        strcpy( pipeCOM, "sc" );
-                        printf( "Pipe: %s Client: %c\n", pipeCOM, req->clientID );
-
-                        strncat( pipeCOM, &( req->clientID ), 1 );
-                        printf( "Pipe: %s\n", pipeCOM );
-
-                        fd = open( pipeCOM, O_WRONLY | O_NONBLOCK );
-                        if ( fd == -1 )
+                        perror( "PIPE NOT FOUND... EXIT" );
+                    }
+                    for ( i = 0; i < cached[ self ]; i++ )
+                    {
+                        if ( i == 0 )
                         {
-                            perror( "PIPE NOT FOUND... EXIT" );
-                            printf( "Pipe: %s\n", pipeCOM );
+                            ptrCached[ i ].responseType = cached[ self ];
                         }
-                        printf( "Tweet Cached: %s\n", cache[ req->clientID - '0' ][ i ].message );
-                        write( fd, &( cache[ req->clientID - '0' ][ i ] ), sizeof( Response ));
+                        write( fd, &( ptrCached[ i ] ), sizeof( Response ));
                     }
                     valid = 'n';
+                    cached[ self ] = 0;
                     close( fd );
                 }
             }
-            else if ( connected[ req->clientID - '0' ] == '1' )
+            else if ( connected[ self ] == '1' )
             {
-                printf( "User %c already connected! \n", req->clientID );
+                printf( "[ERROR] Usuario %c ya conectado! \n", req->clientID );
                 kill( req->pID, SIGUSR1 );
             }
         }
@@ -155,6 +224,7 @@ void* seekingRequest( void* arg )
             {
                 relations[ i ][ j ] = '1';
                 res = malloc( sizeof( Response ));
+                printf( "[UPDATE] Usuario %c ahora sigue a Usuario %d \n", req->clientID, j );
                 strcpy( res->message, "Ahora estás siguiendo a usuario " );
                 strcat( res->message, &( req->params[ 0 ] ));
                 strcat( res->message, "!\n" );
@@ -164,6 +234,7 @@ void* seekingRequest( void* arg )
             else
             {
                 res = malloc( sizeof( Response ));
+                printf( "[ERROR] Usuario %c intento seguir a Usuario %d que ya seguia. \n", req->clientID, j );
                 strcpy( res->message, "No puedes seguir a alguien que ya sigues!\n" );
                 res->responseType = 0;
                 valid = 's';
@@ -177,6 +248,7 @@ void* seekingRequest( void* arg )
             {
                 relations[ i ][ j ] = '0';
                 res = malloc( sizeof( Response ));
+                printf( "[UPDATE] Usuario %c dejo de seguir a Usuario %d \n", req->clientID, j );
                 strcpy( res->message, "Dejaste de seguir a usuario " );
                 strcat( res->message, &( req->params[ 0 ] ));
                 strcat( res->message, "!\n" );
@@ -186,6 +258,7 @@ void* seekingRequest( void* arg )
             else
             {
                 res = malloc( sizeof( Response ));
+                printf( "[ERROR] Usuario %c intento dejar de seguir a Usuario %d que no seguia. \n", req->clientID, j );
                 strcpy( res->message, "No puedes dejar de seguir a alguien que no sigues!\n" );
                 res->responseType = 0;
                 valid = 's';
@@ -196,28 +269,32 @@ void* seekingRequest( void* arg )
             self = req->clientID - '0';
 
             res = malloc( sizeof( Response ));
-            strcpy( res->message, req->params );
+            strcpy( res->message, "-> Usuario " );
+            strncat( res->message, &( req->clientID ), 1 );
+            strcat( res->message, " @" );
+            strncat( res->message, &( req->clientID ), 1 );
+            strcat( res->message, ":\n\t" );
+            strcat( res->message, req->params );
+            strcat( res->message, "\n\n" );
+
             res->responseType = 0;
+
+            printf( "[TWEET] Usuario %c twitteó: \n %s \n", req->clientID, res->message );
 
             for ( i = 0; i < 10; i++ )
             {
-                printf( "Relations between %d and %d : %c\n", self, i, relations[ i ][ self ] );
                 if ( relations[ i ][ self ] == '1' )
                 {
-                    printf( "Client %d followed by %d \n", self, i );
                     if ( connected[ i ] == '1' )
                     {
-                        printf( "Client %d followed by %d \n", self, i );
                         pipeCOM = malloc( 5 * sizeof( char ));
                         sprintf( number, "%d", i );
                         strcpy( pipeCOM, "sc" );
                         strncat( pipeCOM, number, 1 );
-                        printf( "Pipe: %s Client: %c\n", pipeCOM, req->clientID );
                         fd = open( pipeCOM, O_WRONLY | O_NONBLOCK );
                         if ( fd == -1 )
                         {
                             perror( "PIPE NOT FOUND... EXIT" );
-                            printf( "Pipe: %s\n", pipeCOM );
                         }
                         write( fd, res, sizeof( Response ));
                         close( fd );
@@ -226,26 +303,31 @@ void* seekingRequest( void* arg )
                     }
                     else
                     {
-                        printf("Old size: %d\n", sizeof( cache[ i ] ));
-                        cache[ i ] = (Response*) realloc( cache[ i ], sizeof( cache[ i ] ) + sizeof( Response ));
-                        printf("New size: %d\n", sizeof( cache[ i ] ) + sizeof( Response ));
-                        total = sizeof( cache[ i ] ) / sizeof( Response );
-                        strcpy( cache[ i ][ total - 1 ].message, res->message );
-                        printf( "Tweet cached: %s", cache[ i ][ total - 1 ].message );
+                        Response* ptrCached = cache[ i ];
+                        cached[ i ] = cached[ i ] + 1;
+
+                        strcpy( ptrCached[ cached[ i ] - 1 ].message, res->message );
+                        ptrCached[ cached[ i ] - 1 ].responseType = 0;
                     }
                 }
             }
 
 
         }
+        else if ( req->operationID == '4' )
+        {
+            printf( "[UPDATE] Usuario %c ha cerrado sesion. \n", req->clientID );
+
+            valid = 'n';
+            self = req->clientID - '0';
+            connected[ self ] = '0';
+        }
         if ( valid != 'n' )
         {
             pipeCOM = malloc( 5 * sizeof( char ));
             strcpy( pipeCOM, "sc" );
-            printf( "Pipe: %s Client: %c\n", pipeCOM, req->clientID );
 
             strncat( pipeCOM, &( req->clientID ), 1 );
-            printf( "Pipe: %s\n", pipeCOM );
 
             fd = open( pipeCOM, O_WRONLY | O_NONBLOCK );
             if ( fd == -1 )

@@ -9,6 +9,7 @@
 
 char **relations;
 char *connected;
+int cached[10];
 Response **cache;
 
 pthread_t threadID[10];

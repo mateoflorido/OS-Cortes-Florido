@@ -10,6 +10,7 @@
 pthread_t comThread;
 pthread_t selfThread;
 char* pipeCOM;
+char *selfID;
 char* pipeServ;
 
 
