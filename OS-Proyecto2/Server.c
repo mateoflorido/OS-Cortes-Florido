@@ -1,7 +1,3 @@
-//
-// Created by mateo on 9/11/19.
-//
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -15,6 +11,14 @@
 #include "Response.h"
 #include <pthread.h>
 
+/*
+Función: main
+Parámetros de Entrada:
+    argc: Son la cantidad de parámetros que recibe la función.
+    ** argv: Son los parámetros que llegan a la función.
+Descripción: Es el método principal de archivo .c desde donde se invocan
+todas las demás funcionalidades.
+*/
 int main( int argc, char** argv )
 {
     int fd, pid, n, bytes, creado = 0;
@@ -138,9 +142,13 @@ int main( int argc, char** argv )
 
 }
 
+
 /*
- *
- */
+Función: clientHandler
+Descripción:Este método es el hilo que esta constantemente preguntando en consola
+las nuevas acciones que se desean realizar, además verifica esta información y 
+escribe en el pipe que se comunica con los demás clientes.
+*/
 void* seekingRequest( void* arg )
 {
     char* namedPipe = ( char* ) arg;

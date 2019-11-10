@@ -1,6 +1,10 @@
-//
-// Created by mateo on 9/11/19.
-//
+/*
+Archivo: Tweet.h
+Realizado por: Mateo Florido y Daniela Cortes
+Contiene: Estructura de un Tweet que facilita el manejo del
+mismo dentro del sistema.
+Fecha de última modificación: 10/11/2019
+*/
 
 #ifndef TWEET_H
 #define TWEET_H

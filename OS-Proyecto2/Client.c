@@ -1,7 +1,3 @@
-//
-// Created by mateo on 9/11/19.
-//
-
 #include "Client.h"
 #include "Request.h"
 #include <string.h>
@@ -14,6 +10,14 @@
 #include <pthread.h>
 #include "Response.h"
 
+/*
+Función: main
+Parámetros de Entrada:
+    argc: Son la cantidad de parámetros que recibe la función.
+    ** argv:  Son los parámetros que llegan a la función.
+Descripción:Es el método principal de archivo .c desde donde se invocan
+todas las demás funcionalidades.
+*/
 int main( int argc, char** argv )
 {
     int argvid, argvpipe, fd = -1;
@@ -87,6 +91,13 @@ int main( int argc, char** argv )
 
 }
 
+/*
+Función: SIGUSRHandler
+Parámetros de Entrada:
+    sigNum: Es el tipo de operación que se realizará.
+Descripción: Es el método se cierra y elimina el pipe de comunicación
+entre el servidor y el cliente.
+*/
 void SIGUSRHandler( int sigNum )
 {
     if ( sigNum == SIGUSR1 )
@@ -124,6 +135,11 @@ void SIGUSRHandler( int sigNum )
     }
 }
 
+/*
+Función: receiveData
+Descripción:Este método lee la información que fue escrita en pipe que comunica
+desde el servidor.
+*/
 void* receiveData( void* arg )
 {
     int fd = 0, control = 0, checkRun = 0;
@@ -166,6 +182,12 @@ void* receiveData( void* arg )
 
 }
 
+/*
+Función: clientHandler
+Descripción:Este método es el hilo que esta constantemente preguntando en consola
+las nuevas acciones que se desean realizar, además verifica esta información y 
+escribe en el pipe que se comunica con el servidor.
+*/
 void* clientHandler( void* arg )
 {
     char* clientID = ( char* ) arg;
