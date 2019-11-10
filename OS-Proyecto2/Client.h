@@ -1,14 +1,21 @@
+//
+// Created by mateo on 9/11/19.
+//
 
+#ifndef CLIENT_H
+#define CLIENT_H
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-struct Client 
-{
-    char id;
-    FILE* CS;
+#include "Request.h"
 
-};
+pthread_t comThread;
+pthread_t selfThread;
+char* pipeCOM;
+char* pipeServ;
+
+
+void SIGUSRHandler(int sigNum);
+void* receiveData( void* arg );
+void* clientHandler( void* arg );
+
+
+#endif //CLIENT_H
