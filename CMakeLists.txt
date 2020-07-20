@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-project(OS_Proyecto2 C)
+project(PipeTwitter C)
 find_package(Threads REQUIRED)
 
 set(CMAKE_C_STANDARD 99)
